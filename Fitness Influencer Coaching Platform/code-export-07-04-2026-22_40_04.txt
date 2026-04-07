@@ -1,0 +1,135 @@
+clients [icon: user]{
+  id SERIAL PK
+  name VARCHAR(50) NOT NULL
+  phone VARCHAR(12) UNIQUE NOT NULL
+  dob DATE NOT NULL
+  email VARCHAR(322) UNIQUE NOT NULL
+  instagram_handle VARCHAR(50) UNIQUE NOT NULL
+  created_At timestamp
+  updated_At timestamp
+}  
+
+trainers [icon:user-cog]{
+ id SERIAL PK
+ name VARCHAR(50) NOT NULL
+ created_At timestamp
+ updated_At timestamp
+}
+
+plans [icon: user-plus]{
+ id SERIAL PK 
+ name VARCHAR(70)
+ plan_type enum (Live Consultation, Training Routine,Long Term Coaching PLans)
+ trainer_id FK  NOT NULL
+ price DECIMAL
+ duration_in_days INT // (1,7,14,28)     
+}
+ workouts[icon:worker] {
+  id SERIAL PK 
+  trainer_id FK
+  plan_id FK
+  workout_guide TEXT
+  diet_plan TEXT
+  
+ }
+ 
+subscriptions[icon: user-plus]{
+  id SERIAL PK 
+  clients_id FK 
+  plan_id FK
+  status enum(Active, Cancelled, Expired)
+  plan_starts timestamp
+  plan_ends timestamp
+}
+
+live_consultations[icon:] {
+ id SERIAL PK
+ subscriptions_id FK 
+ clients_id FK
+ trainer_id FK
+ status enum(Schedule,Completed,Cancelled)
+ schedule_at timestamp
+ duration_in_hours DECIMAL
+
+}
+
+checkin[icon:check-circle]{
+  id SERIAL PK
+  clients_id FK
+  trainer_id FK 
+  date_submitted timestamp
+  progress_image TEXT
+  week_number INT 
+  notes TEXT
+}
+
+progress_tracking [icon: chart-line]{
+  id SERIAL PK
+  clients_id FK
+  checkin_id FK  
+  recorded_at TIMESTAMP
+  weight DECIMAL
+  body_fat_percentage DECIMAL
+  chest_measurement DECIMAL
+  waist_measurement DECIMAL
+}
+payment[icon:google-pay]{
+  id SERIAL PK
+  amount_paid DECIMAL
+  subscriptions_id FK NOT NULL
+  payment_methods enum(UPI,CARD)
+  payment_date timestamp
+}
+
+
+
+
+
+//client can have many scubscriptions
+clients.id < subscriptions.clients_id
+//client can book many 1 on 1 session
+clients.id < live_consultations.clients_id
+//client can checkins weekly
+clients.id <checkin.clients_id
+//clients progress is tracked
+clients.id <progress_tracking.clients_id
+
+//trainer can create many plans
+trainers.id < plans.trainer_id
+//trainer can have many workout routines
+trainers.id < workouts.trainer_id
+
+//trainer can review checkins from clients
+trainers.id <checkin.trainer_id
+//trainer can have many 1-1 session
+trainers.id < live_consultations.trainer_id
+
+//plan can have many workouts
+plans.id <workouts.plan_id
+//plan can have many clients
+plans.id < subscriptions.plan_id
+
+//for live sessions subscription
+subscriptions.id < live_consultations.subscriptions_id
+//payment for subscription
+subscriptions.id < payment.subscriptions_id
+
+//weekly check to track progress
+checkin.id  < progress_tracking.checkin_id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
