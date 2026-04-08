@@ -1,0 +1,152 @@
+patient [icon:user]{
+  id SERIAL PK
+  registration_no varcahr(15) unique 
+  name varchar(50)
+  age int
+  dob date
+  gender boolean
+  blood_group varchar(4)
+  phone varchar(12) unique not null
+  email varchar(322) unique not null
+  address text
+  disease_history TEXT
+}
+
+doctor[icon:heart-pulse]{
+  id SERIAL PK
+  name varchar(50)
+  specialty_id FK
+  qualification text
+  experience int
+  age int
+  dob date
+  gender boolean
+  blood_group varchar(4)
+  phone varchar(12) unique not null
+  email varchar(322) unique not null
+  address text
+  
+}
+specialty [icon:stripe]{
+  id SERIAL PK
+  name varchar(50) unique 
+}
+appointment[icon:timer]{
+  id SERIAL PK
+  doctor_id FK
+  patient_id FK
+  status enum(Pending,Completed,Cancelled,Delayed)
+  schedule_at timestamp
+}
+consultation[icon:consumer]{
+  id SERIAL PK
+  appointment_id FK unique
+  allergy default NA 
+  cheif_complaints text
+  history_of_presenting_illness text
+  past_medical_or_surgical_history text
+  clinical_examination text
+  diagnosis text
+  investigation default (as advice)
+  advice text
+  medication text 
+  follow_up_advice text //with reports
+}
+diagnostic_tests [icon:tesseract]{
+  id SERIAL PK
+  test_name varchar(70)
+  price int
+  department varchar(50)
+}
+test_prescription[icon:test-tube]{
+  id SERIAL PK
+  consultation_id FK 
+  test_id FK 
+  prescription_date timestamp DEFAULT NOW()
+  status enum(Pending,Sample Collected,Delivered)
+
+}
+
+reports[icon:report]{
+  id SERIAL PK
+  test_prescription_id FK unique
+  result text
+  generated_At timestamp
+  
+}
+
+payment[icon:google-pay]{
+ id SERIAL PK
+ patient_id FK 
+ invoice_no varchar(50) unique
+ consultation_id FK
+ bill_type enum(OPD Consultation, Diagnostics)
+ payment_date timestamp DEFAULT NOW()
+ payment_status enum(Pending, Paid, Failed)
+ payment_method enum(UPI, Card, COD)
+ amount_paid INT NOT NULL
+}
+
+
+
+//1 speciallity can have many doctors
+specialty.id < doctor.specialty_id
+
+//1 patient can have many appointments
+patient.id < appointment.patient_id
+//1 doctor can have many apoointments
+doctor.id < appointment.doctor_id
+
+//1consultation have only 1 appointment
+consultation.appointment_id - appointment.id
+ 
+
+
+//one consultation may have many prescriptions
+consultation.id < test_prescription.consultation_id
+
+//if one visit have many tests
+diagnostic_tests.id < test_prescription.test_id
+
+//1 report belongs to 1 patient
+test_prescription.id - reports.test_prescription_id
+
+
+
+
+//payment belongs to patient and consultation
+
+consultation.id < payment.consultation_id
+
+patient.id < payment.patient_id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
