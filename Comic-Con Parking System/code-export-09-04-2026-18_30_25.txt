@@ -1,0 +1,115 @@
+notation chen
+title Comic Con 
+
+vehicle_category [icon:car]{
+  category_id PK 
+  categoty_name enum(bike,Car,SUVs,Cabs,EV)
+}
+vehicle [icon car]{
+  vehicle_id PK unique
+  catergory_id FK
+  access_category_id FK // if cosplayers with props, exhibitors, VIP guests, staff
+  license_plate varcahr(20)
+  owner_name text
+}
+spot_category [icon:crate] {
+  spot_category_id PK 
+  categoty_name enum(Cosplayer, Exhibitor,VIP, Staff,EV Charging)
+}
+parking_zone [icon:parking]{
+  zone_id PK
+  zone_name text
+
+}
+
+parking_level[icon:parking]{
+  level_id PK 
+  zone_id FK 
+  level_name enum(G,L1,L2) //ground f,1st Floor,2nd floor etc....
+  level_number text
+}
+parking_spot [icon:]{
+  spot_id PK
+  level_id FK
+  spot_category_id FK 
+  spot_number text 
+  is_Available boolean
+  
+
+}
+spot_vehicle_compatibility [icon:git-merge] {
+  compatibility_id PK
+  spot_category_id FK 
+  vehicle_category_id FK 
+}
+
+
+
+parking_session [icon:timer]{
+  session_id PK 
+  vehicle_id FK 
+  spot_id FK 
+  entry_at timestamp 
+  exit_at timestamp 
+  duration int 
+  session_status enum(Active,TimeUp)
+}
+
+parking_ticket [icon:ticket]{
+  ticket_id PK
+  session_id FK 
+  ticket_no text 
+  issued_At timestamp 
+  ticket_status enum(Issued,Used,Expired)
+}
+payment [icon:google-pay]{
+  payment_id PK 
+  session_id FK 
+  rate_id FK
+  amount int 
+  payment_time timestamp
+  payment_method enum(UPI,Card,Cash)
+  payment_status enum(Pending,Paid,Failed)
+}
+parking_rate [icon:currency-rupee] {
+  rate_id PK
+  category_id FK 
+  base_rate decimal 
+  hourly_rate decimal 
+  max_daily_rate decimal
+}
+
+
+//VIP,Exhibitor,staff
+spot_category.spot_category_id < vehicle.access_category_id
+
+//Many vehicles and one rate
+vehicle_category.category_id  < vehicle.catergory_id
+vehicle_category.category_id  < parking_rate.category_id
+
+
+//One zone have many lvels and one lvel have many sopts
+parking_zone.zone_id < parking_level.zone_id
+parking_level.level_id  < parking_spot.level_id
+
+//One spot categoty may have many parking spots
+spot_category.spot_category_id  <parking_spot.spot_category_id
+
+//Many to One spot vehicle compatibility 
+spot_category.spot_category_id< spot_vehicle_compatibility.spot_category_id
+
+vehicle_category.category_id  < spot_vehicle_compatibility.vehicle_category_id
+
+
+// vehicle and spots may have many sessions 
+vehicle.vehicle_id < parking_session.vehicle_id
+parking_spot.spot_id < parking_session.spot_id
+
+parking_rate.rate_id  < payment.rate_id
+
+
+//payments one ticket have only one sessions
+parking_session.session_id  - parking_ticket.session_id
+
+parking_session.session_id - payment.session_id
+
