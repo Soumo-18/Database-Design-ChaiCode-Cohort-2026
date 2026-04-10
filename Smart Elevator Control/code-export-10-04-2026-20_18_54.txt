@@ -1,0 +1,155 @@
+building [icon: building] {
+  id SERIAL PK
+  name varchar(100)
+  city varchar(50)
+  address text
+  total_floors int
+  created_at timestamp DEFAULT NOW()
+}
+
+floor [icon:] {
+  id SERIAL PK
+  building_id FK
+  floor_number int
+  floor_label varchar(20)
+}
+
+elevator_shaft [icon: arrow-up-down] {
+  id SERIAL PK
+  building_id FK
+  shaft_code varchar(20)
+}
+
+elevator [icon: elevenlabs ] {
+  id SERIAL PK
+  shaft_id FK unique
+  building_id FK
+  model varchar(50)
+  capacity int
+   min_floor_id FK
+  max_floor_id FK
+  installed_at date
+}
+
+elevator_floor [icon:] {
+  id SERIAL PK
+  elevator_id FK
+  floor_id FK
+}
+
+elevator_status [icon: azure-tenant-status] {
+  id SERIAL PK
+  elevator_id FK unique
+  status enum(Idle, Moving Up, Moving Down, On Maintenance, Stopped)
+  current_floor_id FK
+  updated_at timestamp DEFAULT NOW()
+}
+
+floor_request [icon:] {
+  id SERIAL PK
+  floor_id FK
+  direction enum(Up, Down)
+  requested_at timestamp DEFAULT NOW()
+  status enum(Pending, Assigned, Completed, Cancelled)
+}
+
+ride_assignment [icon: ] {
+  id SERIAL PK
+  request_id FK unique
+  elevator_id FK
+  assigned_at timestamp DEFAULT NOW()
+}
+
+ride_log [icon:] {
+  id SERIAL PK
+  assignment_id FK unique
+  pickup_floor_id FK
+  dropoff_floor_id FK
+  started_at timestamp
+  completed_at timestamp
+}
+zone [icon: ] {
+  id SERIAL PK
+  building_id FK
+  zone_name varchar(50)
+  zone_type enum(Low,High,Service, Parking)
+}
+
+elevator_zone [icon:] {
+  id SERIAL PK
+  elevator_id FK
+  zone_id FK
+}
+
+floor_zone [icon:] {
+  id SERIAL PK
+  floor_id FK
+  zone_id FK
+}
+
+maintenance [icon:] {
+  id SERIAL PK
+  elevator_id FK
+  type enum(Routine, Emergency, Inspection)
+  description text
+  scheduled_at timestamp
+  completed_at timestamp
+  technician varchar(100)
+  status enum(Scheduled, In Progress, Completed)
+}
+
+
+// building has many floors
+building.id < floor.building_id
+
+// building has many shafts
+building.id < elevator_shaft.building_id
+
+// each shaft has one elevator
+elevator_shaft.id - elevator.shaft_id
+
+// elevator belongs to building
+building.id < elevator.building_id
+
+// elevator serves many floors (many-to-many via elevator_floor)
+elevator.id < elevator_floor.elevator_id
+floor.id < elevator_floor.floor_id
+
+// elevator has one live status record
+elevator.id - elevator_status.elevator_id
+
+// status tracks current floor
+floor.id < elevator_status.current_floor_id
+
+// floor requests come from floors
+floor.id < floor_request.floor_id
+
+// request is assigned to one elevator
+floor_request.id - ride_assignment.request_id
+elevator.id < ride_assignment.elevator_id
+
+// ride log records and trip details
+ride_assignment.id - ride_log.assignment_id
+floor.id < ride_log.pickup_floor_id
+floor.id < ride_log.dropoff_floor_id
+
+// maintenance history of elevator
+elevator.id < maintenance.elevator_id
+ 
+ // building has many zones
+building.id < zone.building_id
+
+// elevator belongs to many zones
+elevator.id < elevator_zone.elevator_id
+zone.id < elevator_zone.zone_id
+
+// floor belongs to many zones
+floor.id < floor_zone.floor_id
+zone.id < floor_zone.zone_id
+
+// elevator boundary limit to the actual floors
+floor.id < elevator.min_floor_id
+floor.id < elevator.max_floor_id
+
+
+
